@@ -3,6 +3,8 @@ package main
 import (
 	"crypto/rand"
 	"encoding/binary"
+	"log"
+//	"encoding/base64"
 
 	"github.com/duo-labs/webauthn/protocol"
 	"github.com/duo-labs/webauthn/webauthn"
@@ -14,6 +16,8 @@ type User struct {
 	name        string
 	displayName string
 	credentials []webauthn.Credential
+	// adding challenge to user definition
+	challenge	protocol.Challenge
 }
 
 // NewUser creates and returns a new User
@@ -24,6 +28,10 @@ func NewUser(name string, displayName string) *User {
 	user.name = name
 	user.displayName = displayName
 	// user.credentials = []webauthn.Credential{}
+	// adding chalenge to user definition
+	challenge, err := protocol.CreateChallenge();
+	if(err != nil){log.Println(err);}
+	user.challenge = challenge;
 
 	return user
 }
@@ -80,4 +88,9 @@ func (u User) CredentialExcludeList() []protocol.CredentialDescriptor {
 	}
 
 	return credentialExcludeList
+}
+
+// returns user assigned challenge
+func (u User) GetChallenge() protocol.Challenge {
+	return u.challenge
 }

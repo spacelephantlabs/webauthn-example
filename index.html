@@ -13,6 +13,10 @@
   <br>
   <input type="text" name="username" id="email" placeholder="i.e. foo@bar.com">
   <br>
+  Algo:
+  <br>
+  <input type="text" name="algo" id="algorithm" placeholder="-7">
+  <br>
   <br>
   <button onclick="registerUser()">Register</button>
   <button onclick="loginUser()">Login</button>
@@ -41,6 +45,30 @@
         .replace(/=/g, "");;
     }
 
+    // generate fixed challenge
+/*    let getRandomBytes = (
+      (typeof self !== 'undefined' && (self.crypto || self.msCrypto))
+        ? function() { // Browsers
+            var crypto = (self.crypto || self.msCrypto), QUOTA = 65536;
+            return function(n) {
+              var a = new Uint8Array(n);
+              for (var i = 0; i < n; i += QUOTA) {
+                crypto.getRandomValues(a.subarray(i, i + Math.min(n - i, QUOTA)));
+              }
+              return a;
+            };
+          }
+        : function() { // Node
+            return require("crypto").randomBytes;
+          }
+    )();
+
+    let aesKey = getRandomBytes(32);
+
+    console.log(aesKey);
+    */
+
+
     function registerUser() {
 
       username = $("#email").val()
@@ -48,6 +76,14 @@
         alert("Please enter a username");
         return;
       }
+
+      algo = $("#algorithm").val()
+      if (algo === "") {
+        alert("Please enter a signature algorithm (number)");
+        return;
+      }
+
+      fixedChallenge = new Uint8Array([235, 238, 61, 10, 145, 129, 200, 223, 206, 111, 174, 37, 170, 67, 68, 36, 37, 254, 92, 104, 52, 67, 171, 98, 222, 91, 115, 240, 148, 123, 222, 213]);
 
       $.get(
         '/register/begin/' + username,
@@ -65,6 +101,8 @@
               credentialCreationOptions.publicKey.excludeCredentials[i].id = bufferDecode(credentialCreationOptions.publicKey.excludeCredentials[i].id);
             }
           }
+          credentialCreationOptions.publicKey.pubKeyCredParams = [{type: "public-key", alg: algo}];
+          //credentialCreationOptions.publicKey.challenge = fixedChallenge;
 
           return navigator.credentials.create({
             publicKey: credentialCreationOptions.publicKey
@@ -107,6 +145,12 @@
       username = $("#email").val()
       if (username === "") {
         alert("Please enter a username");
+        return;
+      }
+
+      algo = $("#algorithm").val()
+      if (algo === "") {
+        alert("Please enter a signature algorithm (number)");
         return;
       }
 

@@ -71,6 +71,9 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 		userDB.PutUser(user)
 	}
 
+	log.Println("New User challenge:");
+	log.Println(user.GetChallenge());
+
 	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
 		credCreationOpts.CredentialExcludeList = user.CredentialExcludeList()
 	}
@@ -80,6 +83,15 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 		user,
 		registerOptions,
 	)
+
+	log.Println("Registration Options:");
+	log.Println(options);
+
+	log.Println("Session Data");
+	log.Println(sessionData);	
+
+	// Changing the challenge 
+//	options.challenge = user.GetChallenge()
 
 	if err != nil {
 		log.Println(err)
