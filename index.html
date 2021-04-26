@@ -45,29 +45,83 @@
         .replace(/=/g, "");;
     }
 
-    // generate fixed challenge
-/*    let getRandomBytes = (
-      (typeof self !== 'undefined' && (self.crypto || self.msCrypto))
-        ? function() { // Browsers
-            var crypto = (self.crypto || self.msCrypto), QUOTA = 65536;
-            return function(n) {
-              var a = new Uint8Array(n);
-              for (var i = 0; i < n; i += QUOTA) {
-                crypto.getRandomValues(a.subarray(i, i + Math.min(n - i, QUOTA)));
-              }
-              return a;
-            };
-          }
-        : function() { // Node
-            return require("crypto").randomBytes;
-          }
-    )();
-
-    let aesKey = getRandomBytes(32);
-
-    console.log(aesKey);
-    */
-
+    // constructing the list of all possible algorithms
+    allAlgo = [
+      {type: "public-key", alg: -65535},
+      {type: "public-key", alg: -260},
+      // OG (6)
+      {type: "public-key", alg: -259},
+      // OG (5)
+      {type: "public-key", alg: -258},
+      // OG (4)
+      {type: "public-key", alg: -257},
+      {type: "public-key", alg: -47},
+      {type: "public-key", alg: -46},
+      {type: "public-key", alg: -45},
+      {type: "public-key", alg: -44},
+      {type: "public-key", alg: -43},
+      {type: "public-key", alg: -42},
+      {type: "public-key", alg: -41},
+      {type: "public-key", alg: -40},
+      // OG (9)
+      {type: "public-key", alg: -39},
+      // OG (8)
+      {type: "public-key", alg: -38},
+      // OG (7)
+      {type: "public-key", alg: -37},
+      // OG (3)
+      {type: "public-key", alg: -36},
+      // OG (2)
+      {type: "public-key", alg: -35},
+      {type: "public-key", alg: -34},
+      {type: "public-key", alg: -33},
+      {type: "public-key", alg: -32},
+      {type: "public-key", alg: -31},
+      {type: "public-key", alg: -30},
+      {type: "public-key", alg: -29},
+      {type: "public-key", alg: -28},
+      {type: "public-key", alg: -27},
+      {type: "public-key", alg: -26},
+      {type: "public-key", alg: -25},
+      {type: "public-key", alg: -18},
+      {type: "public-key", alg: -17},
+      {type: "public-key", alg: -16},
+      {type: "public-key", alg: -15},
+      {type: "public-key", alg: -14},
+      {type: "public-key", alg: -13},
+      {type: "public-key", alg: -12},
+      {type: "public-key", alg: -11},
+      {type: "public-key", alg: -10},
+      {type: "public-key", alg: -9},
+      // OG (10)
+      //{type: "public-key", alg: -8},
+      // OG (1)
+      //{type: "public-key", alg: -7},
+      {type: "public-key", alg: -6},
+      {type: "public-key", alg: -5},
+      {type: "public-key", alg: -4},
+      {type: "public-key", alg: -3},
+      {type: "public-key", alg: 1},
+      {type: "public-key", alg: 2},
+      {type: "public-key", alg: 3},
+      {type: "public-key", alg: 4},
+      {type: "public-key", alg: 5},
+      {type: "public-key", alg: 6},
+      {type: "public-key", alg: 7},
+      {type: "public-key", alg: 10},
+      {type: "public-key", alg: 11},
+      {type: "public-key", alg: 12},
+      {type: "public-key", alg: 13},
+      {type: "public-key", alg: 14},
+      {type: "public-key", alg: 15},
+      {type: "public-key", alg: 24},
+      {type: "public-key", alg: 25},
+      {type: "public-key", alg: 26},
+      {type: "public-key", alg: 30},
+      {type: "public-key", alg: 31},
+      {type: "public-key", alg: 32},
+      {type: "public-key", alg: 33}
+   ];
 
     function registerUser() {
 
@@ -83,7 +137,7 @@
         return;
       }
 
-      fixedChallenge = new Uint8Array([235, 238, 61, 10, 145, 129, 200, 223, 206, 111, 174, 37, 170, 67, 68, 36, 37, 254, 92, 104, 52, 67, 171, 98, 222, 91, 115, 240, 148, 123, 222, 213]);
+      //fixedChallenge = new Uint8Array([235, 238, 61, 10, 145, 129, 200, 223, 206, 111, 174, 37, 170, 67, 68, 36, 37, 254, 92, 104, 52, 67, 171, 98, 222, 91, 115, 240, 148, 123, 222, 213]);
 
       $.get(
         '/register/begin/' + username,
@@ -101,8 +155,12 @@
               credentialCreationOptions.publicKey.excludeCredentials[i].id = bufferDecode(credentialCreationOptions.publicKey.excludeCredentials[i].id);
             }
           }
-          credentialCreationOptions.publicKey.pubKeyCredParams = [{type: "public-key", alg: algo}];
-          //credentialCreationOptions.publicKey.challenge = fixedChallenge;
+          // Replacing the algo by the one in the field
+          //credentialCreationOptions.publicKey.pubKeyCredParams = [{type: "public-key", alg: algo}];
+
+          // Testing the whole list
+          credentialCreationOptions.publicKey.pubKeyCredParams = allAlgo;
+
 
           return navigator.credentials.create({
             publicKey: credentialCreationOptions.publicKey

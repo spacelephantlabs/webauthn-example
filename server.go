@@ -73,6 +73,7 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 
 	log.Println("New User challenge:");
 	log.Println(user.GetChallenge());
+	log.Println();
 
 	registerOptions := func(credCreationOpts *protocol.PublicKeyCredentialCreationOptions) {
 		credCreationOpts.CredentialExcludeList = user.CredentialExcludeList()
@@ -84,14 +85,26 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 		registerOptions,
 	)
 
+	// CHANGE STARTS HERE
+
 	log.Println("Registration Options:");
-	log.Println(options);
+// use this print function to get the JSON keys (not just the f** values)
+	fmt.Printf("%+v\n", options.Response)
 
 	log.Println("Session Data");
-	log.Println(sessionData);	
+	fmt.Printf("%+v\n", sessionData)
 
-	// Changing the challenge 
-//	options.challenge = user.GetChallenge()
+	// Changing the challenge in both objects
+	//options.Response.Challenge = user.GetChallenge()
+	//sessionData.Challenge = user.GetChallenge().String()
+
+	log.Println("Registration Options after Change:");
+//	log.Println(options);
+	fmt.Printf("%+v\n", options.Response.Challenge)
+	fmt.Printf("%+v\n", sessionData.Challenge)
+
+	// CHANGE STOPS HERE
+
 
 	if err != nil {
 		log.Println(err)
@@ -132,6 +145,13 @@ func FinishRegistration(w http.ResponseWriter, r *http.Request) {
 		jsonResponse(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// CHANGE STARTS HERE
+
+	log.Println("Finish registration function - session Data challenge :");
+	fmt.Printf("%+v\n", sessionData.Challenge)
+
+	// CHANGE STOPS HERE
 
 	credential, err := webAuthn.FinishRegistration(user, sessionData, r)
 	if err != nil {
