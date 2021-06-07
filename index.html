@@ -18,6 +18,10 @@
   <input type="text" name="algo" id="algorithm" placeholder="-7">
   <br>
   <br>
+  <div id="challengeDiv">
+  </div>
+  <div id="signDiv">
+  </div>
   <button onclick="registerUser()">Register</button>
   <button onclick="loginUser()">Login</button>
 
@@ -137,7 +141,8 @@
         return;
       }
 
-      //fixedChallenge = new Uint8Array([235, 238, 61, 10, 145, 129, 200, 223, 206, 111, 174, 37, 170, 67, 68, 36, 37, 254, 92, 104, 52, 67, 171, 98, 222, 91, 115, 240, 148, 123, 222, 213]);
+      challenge = '';
+      signature = '';
 
       $.get(
         '/register/begin/' + username,
@@ -147,6 +152,7 @@
         },
         'json')
         .then((credentialCreationOptions) => {
+
           console.log(credentialCreationOptions)
           credentialCreationOptions.publicKey.challenge = bufferDecode(credentialCreationOptions.publicKey.challenge);
           credentialCreationOptions.publicKey.user.id = bufferDecode(credentialCreationOptions.publicKey.user.id);
@@ -156,11 +162,14 @@
             }
           }
           // Replacing the algo by the one in the field
-          //credentialCreationOptions.publicKey.pubKeyCredParams = [{type: "public-key", alg: algo}];
+          credentialCreationOptions.publicKey.pubKeyCredParams = [{type: "public-key", alg: algo}];
 
           // Testing the whole list
-          credentialCreationOptions.publicKey.pubKeyCredParams = allAlgo;
+          //credentialCreationOptions.publicKey.pubKeyCredParams = allAlgo;
 
+          // Retrieving challenge
+          challenge = bufferEncode(credentialCreationOptions.publicKey.challenge);
+          console.log(credentialCreationOptions)
 
           return navigator.credentials.create({
             publicKey: credentialCreationOptions.publicKey
@@ -172,6 +181,7 @@
           let clientDataJSON = credential.response.clientDataJSON;
           let rawId = credential.rawId;
 
+          //challenge = bufferEncode(credential.response.attestationObject);
           $.post(
             '/register/finish/' + username,
             JSON.stringify({
@@ -189,6 +199,9 @@
             'json')
         })
         .then((success) => {
+          document.getElementById("challengeDiv").innerText = "User Registration Challenge\n" + challenge;
+          document.getElementById("signDiv").innerText = "Signature\n" + signature;
+
           alert("successfully registered " + username + "!")
           return
         })
@@ -212,6 +225,8 @@
         return;
       }
 
+      challenge = '';
+
       $.get(
         '/login/begin/' + username,
         null,
@@ -220,11 +235,15 @@
         },
         'json')
         .then((credentialRequestOptions) => {
+          
           console.log(credentialRequestOptions)
           credentialRequestOptions.publicKey.challenge = bufferDecode(credentialRequestOptions.publicKey.challenge);
           credentialRequestOptions.publicKey.allowCredentials.forEach(function (listItem) {
             listItem.id = bufferDecode(listItem.id)
           });
+
+          // Retrieving challenge
+          challenge = bufferEncode(credentialRequestOptions.publicKey.challenge);
 
           return navigator.credentials.get({
             publicKey: credentialRequestOptions.publicKey
@@ -237,6 +256,8 @@
           let rawId = assertion.rawId;
           let sig = assertion.response.signature;
           let userHandle = assertion.response.userHandle;
+
+          signature = bufferEncode(sig);
 
           $.post(
             '/login/finish/' + username,
@@ -257,6 +278,9 @@
             'json')
         })
         .then((success) => {
+         document.getElementById("challengeDiv").innerText = "User Login Challenge\n" + challenge;
+         document.getElementById("signDiv").innerText = "Signature\n" + signature;
+
           alert("successfully logged in " + username + "!")
           return
         })

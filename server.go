@@ -53,6 +53,7 @@ func main() {
 }
 
 func BeginRegistration(w http.ResponseWriter, r *http.Request) {
+	log.Println("------------------------- Begin Registration -------------------------")
 
 	// get username/friendly name
 	vars := mux.Vars(r)
@@ -71,7 +72,7 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 		userDB.PutUser(user)
 	}
 
-	log.Println("New User challenge:");
+	log.Println("Challenge for user " +user.name);
 	log.Println(user.GetChallenge());
 	log.Println();
 
@@ -87,21 +88,24 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 
 	// CHANGE STARTS HERE
 
-	log.Println("Registration Options:");
-// use this print function to get the JSON keys (not just the f** values)
+	log.Println("Original Registration Options:");
+	// use this print function to get the JSON keys (not just the f** values)
 	fmt.Printf("%+v\n", options.Response)
+	log.Println();
 
-	log.Println("Session Data");
+	log.Println("Original Session Data:");
 	fmt.Printf("%+v\n", sessionData)
+	log.Println();
 
 	// Changing the challenge in both objects
-	//options.Response.Challenge = user.GetChallenge()
-	//sessionData.Challenge = user.GetChallenge().String()
+	options.Response.Challenge = user.GetChallenge()
+	sessionData.Challenge = user.GetChallenge().String()
 
-	log.Println("Registration Options after Change:");
-//	log.Println(options);
+	log.Println("Challenge after change (Registration options and session data):");
+	//	log.Println(options);
 	fmt.Printf("%+v\n", options.Response.Challenge)
 	fmt.Printf("%+v\n", sessionData.Challenge)
+	log.Println();
 
 	// CHANGE STOPS HERE
 
@@ -124,6 +128,7 @@ func BeginRegistration(w http.ResponseWriter, r *http.Request) {
 }
 
 func FinishRegistration(w http.ResponseWriter, r *http.Request) {
+	log.Println("-------------------------Finish Registration-------------------------")
 
 	// get username
 	vars := mux.Vars(r)
@@ -148,8 +153,22 @@ func FinishRegistration(w http.ResponseWriter, r *http.Request) {
 
 	// CHANGE STARTS HERE
 
-	log.Println("Finish registration function - session Data challenge :");
-	fmt.Printf("%+v\n", sessionData.Challenge)
+	log.Println("Session Data Loaded from Storage:");
+	fmt.Printf("%+v\n", sessionData)
+	log.Println();
+
+	log.Println("r");
+	fmt.Printf("%+v\n", r.Body)
+
+	/*parsedResponse, err := protocol.ParseCredentialCreationResponse(r)
+	if err != nil {
+		log.Println(err)
+		jsonResponse(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	//log.Println("Parsed Response");
+	fmt.Printf("%+v\n", parsedResponse)*/
 
 	// CHANGE STOPS HERE
 
@@ -162,10 +181,17 @@ func FinishRegistration(w http.ResponseWriter, r *http.Request) {
 
 	user.AddCredential(*credential)
 
+	log.Println("Credentials");
+	fmt.Printf("%+v\n", credential)
+	log.Println();
+
+	log.Println("-------------------Registration successful-------------------------")
+
 	jsonResponse(w, "Registration Success", http.StatusOK)
 }
 
 func BeginLogin(w http.ResponseWriter, r *http.Request) {
+	log.Println("------------------------- Begin Login -------------------------")
 
 	// get username
 	vars := mux.Vars(r)
@@ -181,6 +207,12 @@ func BeginLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// printing challenge
+	log.Println("Challenge for user " +user.name);
+	log.Println(user.GetChallenge());
+	log.Println();
+
+
 	// generate PublicKeyCredentialRequestOptions, session data
 	options, sessionData, err := webAuthn.BeginLogin(user)
 	if err != nil {
@@ -188,6 +220,28 @@ func BeginLogin(w http.ResponseWriter, r *http.Request) {
 		jsonResponse(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// CHANGE STARTS HERE
+
+	log.Println("Original Request Options:");
+	fmt.Printf("%+v\n", options)
+	log.Println();
+
+	log.Println("Original Session Data:");
+	fmt.Printf("%+v\n", sessionData)
+	log.Println();
+
+	// Changing the challenge in both objects
+	sessionData.Challenge = user.GetChallenge().String()
+	options.Response.Challenge = user.GetChallenge()
+
+	log.Println("Challenge after change (session data):");
+	//	log.Println(options);
+	fmt.Printf("%+v\n", sessionData.Challenge)
+	fmt.Printf("%+v\n", options.Response.Challenge)
+	log.Println();
+
+	// CHANGE STOPS HERE
 
 	// store session data as marshaled JSON
 	err = sessionStore.SaveWebauthnSession("authentication", sessionData, r, w)
@@ -197,10 +251,15 @@ func BeginLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	log.Println("Request Options");
+	fmt.Printf("%+v\n", options)
+	log.Println();
+
 	jsonResponse(w, options, http.StatusOK)
 }
 
 func FinishLogin(w http.ResponseWriter, r *http.Request) {
+	log.Println("------------------------- Finish Login -------------------------")
 
 	// get username
 	vars := mux.Vars(r)
@@ -235,6 +294,8 @@ func FinishLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// handle successful login
+	log.Println("------------------------- Login Successful -------------------------")
+
 	jsonResponse(w, "Login Success", http.StatusOK)
 }
 
